@@ -9,6 +9,8 @@ import os from "os";
 import { encode } from "gpt-3-encoder";
 import { randomUUID, randomInt, createHash } from "crypto";
 import { config } from "dotenv";
+import {HttpsProxyAgent} from "https-proxy-agent";
+import * as process from "node:process";
 
 config();
 
@@ -232,6 +234,9 @@ async function handleChatCompletion(req: Request, res: Response) {
     `${req.body?.messages?.length ?? 0} messages`,
     req.body.stream ? "(stream-enabled)" : "(stream-disabled)"
   );
+
+  const model = req.body.model ?? 'gpt-3.5-turbo'
+
   try {
     let session = await getNewSession();
 
@@ -268,7 +273,7 @@ async function handleChatCompletion(req: Request, res: Response) {
         })
       ),
       parent_message_id: randomUUID(),
-      model: "text-davinci-002-render-sha",
+      model: model,
       timezone_offset_min: -180,
       suggestions: [],
       history_and_training_disabled: true,
@@ -291,6 +296,8 @@ async function handleChatCompletion(req: Request, res: Response) {
         "openai-sentinel-proof-token": proofToken,
       },
     });
+
+    console.log(proofToken);
 
     // Set the response headers based on the request type
     if (req.body.stream) {
@@ -361,7 +368,7 @@ async function handleChatCompletion(req: Request, res: Response) {
           id: requestId,
           created: created,
           object: "chat.completion.chunk",
-          model: "gpt-3.5-turbo",
+          model: model,
           choices: [
             {
               delta: {
@@ -385,7 +392,7 @@ async function handleChatCompletion(req: Request, res: Response) {
           id: requestId,
           created: created,
           object: "chat.completion.chunk",
-          model: "gpt-3.5-turbo",
+          model: model,
           choices: [
             {
               delta: {
@@ -402,7 +409,7 @@ async function handleChatCompletion(req: Request, res: Response) {
         JSON.stringify({
           id: requestId,
           created: created,
-          model: "gpt-3.5-turbo",
+          model:model,
           object: "chat.completion",
           choices: [
             {
