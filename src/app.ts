@@ -93,23 +93,30 @@ async function* StreamCompletion(data: any) {
 }
 
 // Setup axios instance for API requests with predefined configurations
+let httpAgent: HttpsProxyAgent<string>;
+if (process.env.PROXY_URL) {
+  console.log('PROXY_URL:', process.env.PROXY_URL);
+  httpAgent = new HttpsProxyAgent(process.env.PROXY_URL);
+}
+
 const axiosInstance = axios.create({
-  httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-  proxy:
-    process.env.PROXY === "true"
-      ? {
-          host: process.env.PROXY_HOST,
-          port: Number(process.env.PROXY_PORT),
-          auth:
-            process.env.PROXY_AUTH === "true"
-              ? {
-                  username: process.env.PROXY_USERNAME,
-                  password: process.env.PROXY_PASSWORD,
-                }
-              : undefined,
-          protocol: process.env.PROXY_PROTOCOL,
-        }
-      : false,
+  // httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+  httpsAgent: httpAgent,
+  proxy: false,
+    // process.env.PROXY === "true"
+    //   ? {
+    //       host: process.env.PROXY_HOST,
+    //       port: Number(process.env.PROXY_PORT),
+    //       auth:
+    //         process.env.PROXY_AUTH === "true"
+    //           ? {
+    //               username: process.env.PROXY_USERNAME,
+    //               password: process.env.PROXY_PASSWORD,
+    //             }
+    //           : undefined,
+    //       protocol: process.env.PROXY_PROTOCOL,
+    //     }
+    //   : false,
   headers: {
     accept: "*/*",
     "accept-language": "en-US,en;q=0.9",
