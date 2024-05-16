@@ -95,7 +95,6 @@ async function* StreamCompletion(data: any) {
 // Setup axios instance for API requests with predefined configurations
 let httpAgent: HttpsProxyAgent<string>;
 if (process.env.PROXY_URL) {
-  console.log('PROXY_URL:', process.env.PROXY_URL);
   httpAgent = new HttpsProxyAgent(process.env.PROXY_URL);
 }
 
@@ -103,20 +102,20 @@ const axiosInstance = axios.create({
   // httpsAgent: new https.Agent({ rejectUnauthorized: false }),
   httpsAgent: httpAgent,
   proxy: false,
-    // process.env.PROXY === "true"
-    //   ? {
-    //       host: process.env.PROXY_HOST,
-    //       port: Number(process.env.PROXY_PORT),
-    //       auth:
-    //         process.env.PROXY_AUTH === "true"
-    //           ? {
-    //               username: process.env.PROXY_USERNAME,
-    //               password: process.env.PROXY_PASSWORD,
-    //             }
-    //           : undefined,
-    //       protocol: process.env.PROXY_PROTOCOL,
-    //     }
-    //   : false,
+  //   proxy: process.env.PROXY === "true"
+  //     ? {
+  //         host: process.env.PROXY_HOST,
+  //         port: Number(process.env.PROXY_PORT),
+  //         auth:
+  //           process.env.PROXY_AUTH === "true"
+  //             ? {
+  //                 username: process.env.PROXY_USERNAME,
+  //                 password: process.env.PROXY_PASSWORD,
+  //               }
+  //             : undefined,
+  //         protocol: process.env.PROXY_PROTOCOL,
+  //       }
+  //     : false,
   headers: {
     accept: "*/*",
     "accept-language": "en-US,en;q=0.9",
@@ -242,7 +241,17 @@ async function handleChatCompletion(req: Request, res: Response) {
     req.body.stream ? "(stream-enabled)" : "(stream-disabled)"
   );
 
-  const model = req.body.model ?? 'gpt-3.5-turbo'
+  let model = 'text-davinci-002-render-sha'
+  if (req.body.model) {
+    switch (req.body.model) {
+      case "gpt-3.5-turbo":
+        model = "text-davinci-002-render-sha";
+        break;
+      default:
+        model = req.body.model;
+        break;
+    }
+  }
 
   try {
     let session = await getNewSession();
@@ -303,8 +312,6 @@ async function handleChatCompletion(req: Request, res: Response) {
         "openai-sentinel-proof-token": proofToken,
       },
     });
-
-    console.log(proofToken);
 
     // Set the response headers based on the request type
     if (req.body.stream) {
@@ -439,7 +446,7 @@ async function handleChatCompletion(req: Request, res: Response) {
 
     res.end();
   } catch (error: any) {
-    // console.log("Error:", error.response?.data ?? error.message);
+    console.log("Error:", error);
     if (!res.headersSent) res.setHeader("Content-Type", "application/json");
     // console.error("Error handling chat completion:", error);
     res.write(
