@@ -446,15 +446,14 @@ async function handleChatCompletion(req: Request, res: Response) {
 
     res.end();
   } catch (error: any) {
-    console.log("Error:", error);
+    console.log("Error:", error.response);
     if (!res.headersSent) res.setHeader("Content-Type", "application/json");
     // console.error("Error handling chat completion:", error);
     res.write(
       JSON.stringify({
-        status: false,
+        status: error.response.status,
         error: {
-          message:
-            "An error occurred. please try again. Additionally, ensure that your request complies with OpenAI's policy.",
+          message: error.response.statusText,
           type: "invalid_request_error",
         },
         support: "https://discord.pawan.krd",
