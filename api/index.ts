@@ -11,8 +11,6 @@ import { config } from "dotenv";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import * as process from "node:process";
 
-export const runtime = "edge";
-
 config();
 
 // Constants for the server and API configuration
