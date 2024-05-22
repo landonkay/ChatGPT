@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 import bodyParser from "body-parser";
 import axios from "axios";
-import https from "https";
 import os from "os";
 import { encode } from "gpt-3-encoder";
 import { randomUUID, randomInt, createHash } from "crypto";
