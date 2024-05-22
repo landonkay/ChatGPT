@@ -21,11 +21,11 @@ const apiUrl = `${baseUrl}/backend-anon/conversation`;
 const refreshInterval = 60000; // Interval to refresh token in ms
 const errorWait = 120000; // Wait time in ms after an error
 const newSessionRetries: number =
-  parseInt(process.env.NEW_SESSION_RETRIES) || 5; // Number of retries to get a new session
+  parseInt(process.env.NEW_SESSION_RETRIES as string) || 5; // Number of retries to get a new session
 const userAgent =
   process.env.USER_AGENT ||
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
-const authKey: string =
+const authKey =
   process.env.API_KEY || null;  // Authorized client apiKey
 
 let cloudflared: ChildProcessWithoutNullStreams;
@@ -93,7 +93,7 @@ async function* StreamCompletion(data: any) {
 }
 
 // Setup axios instance for API requests with predefined configurations
-let httpAgent: HttpsProxyAgent<string>;
+let httpAgent: HttpsProxyAgent<string> | undefined;
 if (process.env.PROXY_URL) {
   httpAgent = new HttpsProxyAgent(process.env.PROXY_URL);
 }
@@ -174,7 +174,7 @@ function GenerateProofToken(
 }
 
 // Function to get a new session ID and token from the OpenAI API
-async function getNewSession(retries: number = 0): Promise<Session> {
+async function getNewSession(retries: number = 0) {
   let newDeviceId = randomUUID();
   try {
     const response = await axiosInstance.post(
@@ -325,8 +325,8 @@ async function handleChatCompletion(req: Request, res: Response) {
     let fullContent = "";
     let requestId = GenerateCompletionId("chatcmpl-");
     let created = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
-    let finish_reason = null;
-    let error: string;
+    let finish_reason: string | null = null;
+    let error: string | null = null;
 
     for await (const message of StreamCompletion(response.data)) {
       // Skip heartbeat detection
@@ -478,14 +478,13 @@ app.use((req, res) =>
     error: {
       message: `The requested endpoint (${req.method.toLocaleUpperCase()} ${
         req.path
-      }) was not found. please make sure to use "http://localhost:3040/v1" as the base URL.`,
+      }) was not found. please make sure to use "${process.env.NODE_ENV === "production" ? "https" : "http"}://${process.env.VERCEL_URL ?? `localhost:${port}`}/v1" as the base URL.`,
       type: "invalid_request_error",
     },
-    support: "https://discord.pawan.krd",
   })
 );
 
-async function DownloadCloudflared(): Promise<string> {
+async function DownloadCloudflared() {
   const platform = os.platform();
   let url: string;
 
@@ -538,16 +537,16 @@ async function DownloadCloudflared(): Promise<string> {
     });
   } catch (error: any) {
     // console.error("Failed to download file:", error.message);
-    return null;
+    return "Failed to download file";
   }
 }
 
 async function StartCloudflaredTunnel(
   cloudflaredPath: string
-): Promise<string> {
+) {
   if (!cloudflaredPath) {
     console.error("Failed to download Cloudflared executable.");
-    return null;
+    return "Failed to download Cloudflared executable.";
   }
 
   const localUrl = `http://localhost:${port}`;
@@ -578,7 +577,7 @@ async function StartCloudflaredTunnel(
     });
 
     cloudflared.on("close", (code: any) => {
-      resolve(null);
+      resolve(`Cloudflared tunnel process exited with code ${code}`);
       // console.log(`Cloudflared tunnel process exited with code ${code}`);
     });
   });
@@ -588,8 +587,8 @@ async function StartCloudflaredTunnel(
 app.listen(port, async () => {
   if (process.env.CLOUDFLARED === undefined) process.env.CLOUDFLARED = "true";
   let cloudflared = process.env.CLOUDFLARED === "true";
-  let filePath: string;
-  let publicURL: string;
+  let filePath: string | undefined;
+  let publicURL: string | undefined;
   if (cloudflared) {
     filePath = await DownloadCloudflared();
     publicURL = await StartCloudflaredTunnel(filePath);
