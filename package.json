@@ -5,8 +5,7 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel deploy"
+    "start": "node api/index.ts"
   },
   "author": "Pawan Osman",
   "license": "AGPL-3.0",
