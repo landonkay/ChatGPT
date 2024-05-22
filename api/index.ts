@@ -11,6 +11,8 @@ import { config } from "dotenv";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import * as process from "node:process";
 
+export const runtime = "edge";
+
 config();
 
 // Constants for the server and API configuration
@@ -455,7 +457,6 @@ async function handleChatCompletion(req: Request, res: Response) {
           message: error.response.statusText,
           type: "invalid_request_error",
         },
-        support: "https://discord.pawan.krd",
       })
     );
     res.end();
