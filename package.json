@@ -5,9 +5,8 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "start": "tsc && node dist/app.js",
-    "watch": "tsc-watch --onSuccess \"node dist/app.js\"",
-    "build": "tsc"
+    "dev": "vercel dev",
+    "deploy": "vercel deploy"
   },
   "author": "Pawan Osman",
   "license": "AGPL-3.0",
