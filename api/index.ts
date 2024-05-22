@@ -478,7 +478,7 @@ app.use((req, res) =>
     error: {
       message: `The requested endpoint (${req.method.toLocaleUpperCase()} ${
         req.path
-      }) was not found. please make sure to use '${process.env.NODE_ENV === "production" ? "https" : "http"}://${process.env.VERCEL_URL ?? `localhost:${port}`}/v1' as the base URL.`,
+      }) was not found. please make sure to use '${process.env.NODE_ENV === "production" ? "https" : "http"}://${process.env.API_URL ?? process.env.VERCEL_URL ?? `localhost:${port}`}/v1' as the base URL.`,
       type: "invalid_request_error",
     },
   })
